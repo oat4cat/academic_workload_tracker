@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер учебной нагрузки</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <h1>📊 Трекер учебной нагрузки</h1>
+
+    <div class="row">
+        <div class="col">
+            <div class="card drop-zone" id="planDropZone">
+                <h2>1. План нагрузки (Excel)</h2>
+                <p>Загрузите файл <b>.xls</b> или <b>.xlsx</b> с планом (кнопкой или перетащите сюда).</p>
+                <label>Семестр: 
+                    <select id="semesterSelect">
+                        <option value="Зимний семестр">Зимний семестр</option>
+                        <option value="Летний семестр">Летний семестр</option>
+                    </select>
+                </label>
+                <br>
+                <input type="file" id="excelFile" accept=".xls,.xlsx">
+                <div class="status" id="planStatus">Данные не загружены</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card drop-zone" id="scheduleDropZone">
+                <h2>2. Фактическое расписание</h2>
+                <p>Загрузите выгруженный файл расписания в формате <b>.csv</b> (кнопкой или перетащите сюда).</p>
+                <input type="file" id="scheduleFile" accept=".csv">
+                <div style="margin: 10px 0;">
+                    <label style="cursor: pointer; font-size: 14px;">
+                        <input type="checkbox" id="includeConsultations" checked onchange="generateReport()"> 
+                        Учитывать консультации в отчете
+                    </label>
+                </div>
+                <div class="status" id="scheduleStatus">Данные не загружены</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>3. Отчет: План vs Факт 
+            <button class="success" onclick="exportCSV()" style="float:right;">Скачать CSV (для отчета)</button>
+        </h2>
+        <div id="reportContainer">
+            <p style="text-align:center; color:#999;">Загрузите план и расписание, чтобы увидеть отчет.</p>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button class="danger" onclick="clearCache()">🗑️ Очистить сохраненные данные</button>
+    </div>
+
+    <script src="script.js"></script>
+
+    <footer>
+    <a href="https://github.com/ТВОЙ_НИК/load-tracker" target="_blank">Репозиторий на GitHub</a>
+</footer>
+</body>
+</html>
