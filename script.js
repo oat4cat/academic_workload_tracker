@@ -8,11 +8,11 @@ window.onload = function() {
     
     if (cachedPlan) {
         planData = JSON.parse(cachedPlan);
-        document.getElementById('planStatus').innerText = `✅ Загружено (сохранено: ${localStorage.getItem('trackerPlanDate')})`;
+        document.getElementById('planStatus').innerText = `Загружено (сохранено: ${localStorage.getItem('trackerPlanDate')})`;
     }
     if (cachedSchedule) {
         factData = JSON.parse(cachedSchedule);
-        document.getElementById('scheduleStatus').innerText = `✅ Загружено (сохранено: ${localStorage.getItem('trackerScheduleDate')})`;
+        document.getElementById('scheduleStatus').innerText = `Загружено (сохранено: ${localStorage.getItem('trackerScheduleDate')})`;
     }
     if (cachedPlan || cachedSchedule) generateReport();
 };
@@ -136,7 +136,7 @@ function parseExcel(wb) {
 
     localStorage.setItem('trackerPlan', JSON.stringify(planData));
     localStorage.setItem('trackerPlanDate', new Date().toLocaleString());
-    document.getElementById('planStatus').innerText = `✅ Успешно загружено! (Сохранено: ${new Date().toLocaleString()})`;
+    document.getElementById('planStatus').innerText = `Успешно загружено! (Сохранено: ${new Date().toLocaleString()})`;
     generateReport();
 }
 
@@ -171,8 +171,7 @@ function getSemesterBounds(semester, baseYear) {
 }
 
 function parseSchedule(csvText) {
-    console.log('=== НАЧАЛО ПАРСИНГА РАСПИСАНИЯ (CSV) ===');
-    
+
     if (!csvText.trim()) {
         alert("Файл пустой!");
         return;
@@ -181,8 +180,6 @@ function parseSchedule(csvText) {
     const workbook = XLSX.read(csvText, {type: 'string'});
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const json = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: ""});
-    
-    console.log(`Всего строк в CSV: ${json.length}`);
     
     factData = {};
     const includeConsultations = document.getElementById('includeConsultations').checked;
@@ -223,10 +220,8 @@ function parseSchedule(csvText) {
         return;
     }
     
-    console.log(`Определён год: ${detectedYear}`);
     
     const bounds = getSemesterBounds(semester, detectedYear);
-    console.log(`Границы семестра "${semester}": ${bounds.start} — ${bounds.end}`);
     
     let foundPairs = 0;
     let skippedOutsideSemester = 0;
@@ -291,25 +286,18 @@ function parseSchedule(csvText) {
         
         factData[dataKey][typeKey].push({ date: pairDate });
         foundPairs++;
-        
-        console.log(`✅ ${pairDate} | ${typeKey} | ${subject} | Группы: ${groupsNormalized}`);
     }
-
-    console.log(`\n=== ИТОГО НАЙДЕНО ПАР (в семестре): ${foundPairs} ===`);
-    console.log(`Пропущено пар вне семестра: ${skippedOutsideSemester}`);
     
     for (let key in factData) {
         const [subject, groups] = key.split('_');
-        console.log(`\n📚 ${subject} | Группы: ${groups}`);
         for (let type in factData[key]) {
             const pairs = factData[key][type];
-            console.log(`  ${type}: ${pairs.length} пар = ${pairs.length * 2} часов`);
         }
     }
 
     localStorage.setItem('trackerSchedule', JSON.stringify(factData));
     localStorage.setItem('trackerScheduleDate', new Date().toLocaleString());
-    document.getElementById('scheduleStatus').innerText = `✅ Успешно обновлено! (Пар в семестре: ${foundPairs}, Сохранено: ${new Date().toLocaleString()})`;
+    document.getElementById('scheduleStatus').innerText = `Успешно обновлено! (Пар в семестре: ${foundPairs}, Сохранено: ${new Date().toLocaleString()})`;
     generateReport();
 }
 
@@ -361,19 +349,20 @@ function generateReport() {
             
             const progress = planHours > 0 ? Math.min((factHoursToday / planHours) * 100, 100) : 0;
             let progressClass = '';
-            if (progress < 50) progressClass = 'danger';
-            else if (progress < 80) progressClass = 'warning';
+            if (progress < 50) progressClass = 'in-progress';
+            else if (progress < 100) progressClass = 'almost-done';
+            // Если progress === 100, класс не добавляется, и используется зелёный цвет по умолчанию
 
             let statusText = '';
             let statusClass = 'ok';
             if (notScheduled > 0) {
-                statusText = `❌ Не хватает ${notScheduled} ч.`;
+                statusText = `Не хватает ${notScheduled} ч.`;
                 statusClass = 'missing';
             } else if (notScheduled < 0) {
-                statusText = `⚠️ Перерасход ${Math.abs(notScheduled)} ч.`;
+                statusText = `Выставлено на ${Math.abs(notScheduled)} ч. больше`;
                 statusClass = 'over';
             } else {
-                statusText = '✅ Всё выставлено';
+                statusText = 'Всё выставлено';
             }
 
             html += `<tr class="${statusClass}">`;
